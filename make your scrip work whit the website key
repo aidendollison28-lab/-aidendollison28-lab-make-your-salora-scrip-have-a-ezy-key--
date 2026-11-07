@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solara Script Wrapper Tool</title>
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: Arial, sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .panel { background-color: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: 100%; max-width: 600px; box-sizing: border-box; }
+        h2 { color: #ffcc00; margin-top: 0; border-bottom: 1px solid #333; padding-bottom: 8px; }
+        textarea { width: 100%; height: 150px; background: #2a2a2a; color: #00ff88; border: 1px solid #444; border-radius: 4px; padding: 10px; font-family: monospace; box-sizing: border-box; resize: vertical; }
+        input { width: 100%; padding: 10px; border: 1px solid #444; border-radius: 4px; background: #333; color: #fff; font-size: 1rem; box-sizing: border-box; margin-bottom: 15px; }
+        button { background-color: #ffcc00; color: #121212; border: none; padding: 12px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; font-size: 1rem; margin-top: 10px; }
+        button:hover { background-color: #e6b800; }
+        .output-box { margin-top: 20px; background: #111; border: 1px dashed #ffcc00; padding: 15px; display: none; border-radius: 4px; }
+        .output-box textarea { height: 220px; color: #fff; }
+    </style>
+</head>
+<body>
+
+    <div class="panel">
+        <h2>Script Wrapper Tool</h2>
+        <p>1. Enter your key system website URL below:</p>
+        <input type="text" id="siteUrl" placeholder="https://github.io" value="https://">
+
+        <p>2. Paste your raw Roblox Lua script below:</p>
+        <textarea id="rawScript" placeholder="print('Hello from Solara!')"></textarea>
+        
+        <button onclick="wrapScript()">Inject Key System</button>
+
+        <div id="wrapperOutput" class="output-box">
+            <p style="margin:0 0 8px 0; color:#ffcc00; font-weight: bold;">Protected Copy-Paste Script:</p>
+            <textarea id="finalLuaScript" readonly></textarea>
+            <button onclick="copyScript()" style="background: #333; color: #fff; border: 1px solid #555;">Copy To Clipboard</button>
+        </div>
+    </div>
+
+<script>
+    function wrapScript() {
+        const scriptVal = document.getElementById('rawScript').value;
+        const siteUrl = document.getElementById('siteUrl').value;
+
+        if (!scriptVal.trim()) { 
+            alert('Please paste your script code first!'); 
+            return; 
+        }
+
+        const template = `--[[ \n` +
+`    Protected by Multi-Stage Verification Gateway\n` +
+`    Get your activation key here: ${siteUrl}\n` +
+`--]]\n\n` +
+`local S = Instance.new("ScreenGui")\n` +
+`local F = Instance.new("Frame")\n` +
+`local T = Instance.new("TextBox")\n` +
+`local B = Instance.new("TextButton")\n` +
+`local L = Instance.new("TextLabel")\n\n` +
+`S.Parent = game:GetService("CoreGui")\n` +
+`S.ResetOnSpawn = false\n\n` +
+`F.Parent = S\n` +
+`F.BackgroundColor3 = Color3.fromRGB(24,24,24)\n` +
+`F.Position = UDim2.new(0.5, -135, 0.5, -85)\n` +
+`F.Size = UDim2.new(0, 270, 0, 170)\n` +
+`F.Active = true\n` +
+`F.Draggable = true\n\n` +
+`L.Parent = F\n` +
+`L.Size = UDim2.new(1, 0, 0, 45)\n` +
+`L.Text = "Key System Verification"\n` +
+`L.TextColor3 = Color3.fromRGB(255,204,0)\n` +
+`L.BackgroundTransparency = 1\n` +
+`L.TextSize = 16\n` +
+`L.Font = Enum.Font.SourceSansBold\n\n` +
+`T.Parent = F\n` +
+`T.Position = UDim2.new(0.1, 0, 0.35, 0)\n` +
+`T.Size = UDim2.new(0.8, 0, 0, 35)\n` +
+`T.PlaceholderText = "Enter Key From Site..."\n` +
+`T.BackgroundColor3 = Color3.fromRGB(38,38,38)\n` +
+`T.TextColor3 = Color3.fromRGB(255,255,255)\n\n` +
+`B.Parent = F\n` +
+`B.Position = UDim2.new(0.1, 0, 0.65, 0)\n` +
+`B.Size = UDim2.new(0.8, 0, 0, 35)\n` +
+`B.Text = "Verify Execution"\n` +
+`B.BackgroundColor3 = Color3.fromRGB(0, 255, 136)\n` +
+`B.TextColor3 = Color3.fromRGB(15, 15, 15)\n` +
+`B.Font = Enum.Font.SourceSansBold\n` +
+`B.TextSize = 16\n\n` +
+`B.MouseButton1Click:Connect(function()\n` +
+`    local d = os.date("!*t")\n` +
+`    local salt = (d.year * 7) + (d.month * 23) + d.day\n` +
+`    local expected = "SOLARA_CHAIN_" .. tostring(salt * 419)\n\n` +
+`    if T.Text == expected then\n` +
+`        L.Text = "Success!"\n` +
+`        task.wait(0.5)\n` +
+`        S:Destroy()\n` +
+`        task.spawn(function()\n` +
+`            ${scriptVal.split('\n').join('\n            ')}\n` +
+`        end)\n` +
+`    else \n` +
+`        L.Text = "Invalid Key! Re-run site stages." \n` +
+`        L.TextColor3 = Color3.fromRGB(255,50,50) \n` +
+`    end\n` +
+`end)`;
+
+        document.getElementById('finalLuaScript').value = template;
+        document.getElementById('wrapperOutput').style.display = 'block';
+    }
+
+    function copyScript() {
+        const text = document.getElementById('finalLuaScript');
+        text.select();
+        navigator.clipboard.writeText(text.value);
+        alert("Protected script copied to clipboard!");
+    }
+</script>
+
+</body>
+</html>
